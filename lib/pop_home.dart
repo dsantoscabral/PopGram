@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:popgram/pop_body.dart';
 
 class PopHome extends StatelessWidget {
-
   final topBar = AppBar(
     backgroundColor: Color(0xfff8faf8),
     centerTitle: true,
