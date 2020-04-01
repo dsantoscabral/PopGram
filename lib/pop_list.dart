@@ -1,37 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:popgram/pop_stories.dart';
+import 'package:http/http.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:popgram/pop_album.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 
-Future<PopAlbum> fetchAlbum() async {
-  final response = await http.get(Uri.encodeFull('https://mobile.int.granito.xyz/api/feed/getposts'), headers: {'Accept': 'application/json'});
+import 'package:popgram/pop_comments.dart';
+
+Future<List<PopAlbum>> fetchAlbum() async {
+  Response response = await get('https://mobile.int.granito.xyz/api/feed/getposts');
 
   if (response.statusCode == 200) {
-    return PopAlbum.fromJson(jsonDecode(response.body));
+
+    List<dynamic> body = jsonDecode(response.body);
+    List<PopAlbum> popAlbuns = body.map((dynamic item) => PopAlbum.fromJson(item)).toList();
+    return popAlbuns;
+
+    //return PopAlbum.fromJson(jsonDecode(response.body));
   } else {
     throw Exception('Tente mais tarde...');
   }
 }
 
-class PopList extends StatefulWidget {
-  const PopList({Key key}) : super(key: key);
-
-  @override
-  _PopList createState() => _PopList();
-}
-
-class _PopList extends State<PopList> {
-  Future<PopAlbum> futureAlbum;
-
-  @override
-  void initState() {
-    super.initState();
-    futureAlbum = fetchAlbum();
-  }
-
+class PopList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
@@ -39,19 +32,25 @@ class _PopList extends State<PopList> {
     var deviceSize = MediaQuery.of(context).size;
 
     final userImage = "assets/images/pop_user.png";
+    Future<List<PopAlbum>> popAlbuns;
+    popAlbuns = fetchAlbum();
 
     Widget projectWidget() {
       return FutureBuilder(
-        future: futureAlbum,
-        builder: (context, projectSnap) {
+        future: fetchAlbum(),
+        builder: (BuildContext context, AsyncSnapshot<List<PopAlbum>> projectSnap) {
           if (projectSnap.connectionState == ConnectionState.none &&
               projectSnap.hasData == null) {
             //print('project snapshot data is: ${projectSnap.data}');
             return Container();
           }
+
+          List<PopAlbum> postList = projectSnap.data;
+
           return ListView.builder(
-            itemCount: projectSnap.data.length,
-            itemBuilder: (context, index)
+           itemCount: postList.length,
+
+            itemBuilder: (BuildContext context, index)
             {
               PopAlbum project = projectSnap.data[index];
               return Column(
@@ -74,7 +73,7 @@ class _PopList extends State<PopList> {
                                   //color: Colors.black,
                                   image: new DecorationImage(
                                     fit: BoxFit.fill,
-                                    image: NetworkImage(project.photoUri),
+                                    image: NetworkImage(postList[index].photoUri),
                                   )),
                             ),
                             new SizedBox(
@@ -91,13 +90,7 @@ class _PopList extends State<PopList> {
                       ],
                     ),
                   ),
-                  Flexible(
-                    fit: FlexFit.loose,
-                    child: new Image.asset(
-                      "assets/images/pop_image.png",
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                  Image.network(postList[index].person.profilePhotoUri),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
@@ -123,8 +116,13 @@ class _PopList extends State<PopList> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: Text(
-                      "Curtido por gh_cabral, eu_danisants e outras pessoas",
+                    child: Text("Curtido por eu_danisants e outras " + postList[index].likes.toString() + " pessoas",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text("Curtido por eu_danisants e outras " + postList[index].likes.toString() + " pessoas",
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -141,7 +139,7 @@ class _PopList extends State<PopList> {
                             //color: Colors.black,
                             image: new DecorationImage(
                               fit: BoxFit.fill,
-                              image: new ExactAssetImage(userImage),
+                              image: NetworkImage(postList[index].photoUri),
                             ),
                           ),
                         ),
@@ -164,7 +162,6 @@ class _PopList extends State<PopList> {
             },
           );
         },
-
       );
     }
 

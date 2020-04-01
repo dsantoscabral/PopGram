@@ -20,19 +20,19 @@ class PopAlbum {
       this.person,
       this.comments});
 
-  factory PopAlbum.fromJson(Map<String, dynamic> parsedjson) {
+  factory PopAlbum.fromJson(Map<String, dynamic> json) {
 
-    var listComment = parsedjson['comments'] as List;
+    var listComment = json['comments'] as List;
     print(listComment.runtimeType);
     List<PopComments> commentsList = listComment.map((i) => PopComments.fromJson(i)).toList();
 
     return PopAlbum(
-      postId: parsedjson['postId'],
-      personId: parsedjson['personId'],
-      created: parsedjson['created'],
-      photoUri: parsedjson['photoUri'],
-      likes: parsedjson['likes'],
-      person: parsedjson['person'],
+      postId: json['postId'],
+      personId: json['personId'],
+      created: json['created'],
+      photoUri: json['photoUri'],
+      likes: json['likes'],
+      person: PopPerson.fromJson(json['person']),
       comments: commentsList,
     );
   }

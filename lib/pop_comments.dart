@@ -17,7 +17,7 @@ class PopComments {
       commentId: json['commentId'],
       postId: json['postId'],
       personId: json['personId'],
-      person: json['person']
+      person: PopPerson.fromJson(json['person'])
     );
   }
 }
